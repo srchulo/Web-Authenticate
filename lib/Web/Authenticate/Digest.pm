@@ -3,7 +3,7 @@ package Web::Authenticate::Digest;
 use Mouse;
 use Mouse::Util::TypeConstraints;
 use Crypt::PBKDF2;
-#ABSTRACT: The default implementation of Web::Authentication::Digest::Role.
+#ABSTRACT: The default implementation of Web::Authenticate::Digest::Role.
 
 with 'Web::Authenticate::Digest::Role';
 

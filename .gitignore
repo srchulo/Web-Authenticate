@@ -1,3 +1,8 @@
 test.pl
 .build
 Web-Authenticate-*
+cookie.pl
+session.pl
+session_handler.pl
+storage.pl
+notes
