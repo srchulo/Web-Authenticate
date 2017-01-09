@@ -102,7 +102,6 @@ Gets the value of the cookie with name. Returns undef if there is no cookie with
 
     my $cookie_value = $cookie_handler->get_cookie($name);
 
-
 =cut
 
 sub get_cookie {
@@ -110,7 +109,7 @@ sub get_cookie {
     croak "must provide name" unless $name;
 
     my $q = CGI->new;
-    return $q->cookie($self->_get_cookie_name($name));
+    return scalar $q->cookie($self->_get_cookie_name($name));
 }
 
 =method delete_cookie

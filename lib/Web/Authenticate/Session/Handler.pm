@@ -1,10 +1,13 @@
 use strict;
 package Web::Authenticate::Session::Handler;
 use Mouse;
+use Carp;
 use DateTime;
 use Session::Token;
 use Web::Authenticate::Cookie::Handler;
 #ABSTRACT: The default implementation of Web::Authentication::Session::Handler::Role.
+
+with 'Web::Authenticate::Session::Handler::Role';
 
 =method session_storage_handler
 
@@ -65,6 +68,7 @@ Creates session for the user and stores the cookie for the session in the user's
 
 sub create_session {
     my ($self, $user) = @_;
+    croak "must provide user" unless $user;
 
     my $session_id = Session::Token->new(entropy => 256)->get;
     my $session = $self->session_storage_handler->store_session($user, $session_id, $self->_get_expires);
@@ -74,6 +78,24 @@ sub create_session {
     $self->_set_session_cookie($session_id);
 
     return $session;
+}
+
+=method delete_session
+
+Deletes the current session.
+
+    $session_handler->delete_session;
+
+=cut
+
+sub delete_session {
+    my ($self) = @_;
+
+    my $session_id = $self->_get_session_id;
+    return unless $session_id;
+
+    $self->session_storage_handler->delete_session($session_id);
+    $self->cookie_handler->delete_cookie($self->session_id_cookie_name);
 }
 
 =method update_expires

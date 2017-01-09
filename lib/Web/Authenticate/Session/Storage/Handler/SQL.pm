@@ -221,6 +221,23 @@ sub load_session {
     return Web::Authenticate::Session->new(id => $session->{$session_id_field}, expires => $session->{$expires_field}, user => $user, row => $session);
 }
 
+=method delete_session
+
+Deletes a session from storage.
+
+    $session_storage_handler->delete_session($session_id);
+
+=cut
+
+sub delete_session {
+    my ($self, $session_id) = @_;
+    croak "must provide session_id" unless $session_id;
+
+    my $sessions_table = $self->sessions_table;
+    my $session_id_field = $self->session_id_field;
+    $self->dbix_raw->raw("DELETE FROM $sessions_table WHERE $session_id_field = ?", $session_id);
+}
+
 =method invalidate_user_sessions
 
 Invalidates (deletes) any user sessions for user unless L</allow_multiple_session_per_user> is set to true.

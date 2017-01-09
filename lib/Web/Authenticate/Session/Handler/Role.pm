@@ -13,6 +13,16 @@ Creates a session for user. Returns an object that does L<Web::Authenticate::Ses
 
 requires 'create_session';
 
+=method delete_session
+
+Deletes the current session.
+
+    $session_handler->delete_session;
+
+=cut
+
+requires 'delete_session';
+
 =method update_expires
 
 Updates the expires time for session. Returns an object that does L<Web::Authenticate::Session::Role>.

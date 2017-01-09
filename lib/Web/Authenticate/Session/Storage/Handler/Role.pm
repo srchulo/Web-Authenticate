@@ -32,6 +32,16 @@ Updates the time a session expires.
 
 =cut
 
+=method delete_session
+
+Deletes a session from storage.
+
+    $session_storage_handler->delete_session($session_id);
+
+=cut
+
+requires 'delete_session';
+
 requires 'update_expires';
 
 =method invalidate_user_sessions
