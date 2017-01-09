@@ -15,7 +15,7 @@ with 'Web::Authenticate::User::Storage::Handler::Role';
 This L<Web::Authenticate::User::Storage::Handler::Role> is meant to be used with a very specific table structure:
 
     CREATE TABLE users (
-    	id INTEGER PRIMARY KEY AUTO_INCREMENT,
+        id INTEGER PRIMARY KEY AUTO_INCREMENT,
         username VARCHAR(255) NOT NULL UNIQUE,
         password TEXT NOT NULL
     );

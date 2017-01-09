@@ -21,7 +21,7 @@ It is flexible so you can rewrite any of those pieces for your applications' nee
 
 =head1 SYNOPSIS
 
-	my $dbix_raw = DBIx::Raw->new(dsn => 'dbi:mysql:test:127.0.0.1:3306', user => 'user', password => 'password');
+    my $dbix_raw = DBIx::Raw->new(dsn => 'dbi:mysql:test:127.0.0.1:3306', user => 'user', password => 'password');
     my $user_storage_handler = Web::Authenticate::User::Storage::Handler::SQL->new(dbix_raw => $dbix_raw);
     my $storage_handler = Web::Authenticate::Session::Storage::Handler::SQL->new(dbix_raw => $dbix_raw, user_storage_handler => $user_storage_handler);
     my $session_handler = Web::Authenticate::Session::Handler->new(session_storage_handler => $storage_handler);
@@ -33,41 +33,41 @@ It is flexible so you can rewrite any of those pieces for your applications' nee
         login_url => 'http://www.google.com/login.cgi',
     );  
 
-	# login user
-	my $login_result = $web_authenticate->login(login_args => [$username, $password]);
+    # login user
+    my $login_result = $web_authenticate->login(login_args => [$username, $password]);
 
-	if ($login_result->success) {
-		# success!
-	}
+    if ($login_result->success) {
+        # success!
+    }
 
-	# authenticate a user to be on a page just with their session
-	my $authenticate_result = $web_authenticate->authenticate;
+    # authenticate a user to be on a page just with their session
+    my $authenticate_result = $web_authenticate->authenticate;
 
-	if ($authenticate_result->succes) {
-		# success! allowed to access page
-	} 
+    if ($authenticate_result->succes) {
+        # success! allowed to access page
+    } 
 
-	# authenticate user with authenticators
-	my $authenticate_result = $web_authenticate->authenticate(authenticators => $authenticators);
+    # authenticate user with authenticators
+    my $authenticate_result = $web_authenticate->authenticate(authenticators => $authenticators);
 
-	if ($authenticate_result->succes) {
-		# success! allowed to access page
-	} 
+    if ($authenticate_result->succes) {
+        # success! allowed to access page
+    } 
 
-	
-	# create a user
-	my $create_user_result = $web_authenticate->create_user(username => $username, password => $password);
+    
+    # create a user
+    my $create_user_result = $web_authenticate->create_user(username => $username, password => $password);
 
-	if ($create_user_result->success) {
-		print "Created user " . $create_user_result->user->id . "\n";
-	}
+    if ($create_user_result->success) {
+        print "Created user " . $create_user_result->user->id . "\n";
+    }
 
-	# create a user and verify username and password meet requirements
-	my $create_user_result = $web_authenticate->create_user(username => $username, password => $password, username_verifiers => $username_verifiers, password_verifiers => $password_verifiers);
+    # create a user and verify username and password meet requirements
+    my $create_user_result = $web_authenticate->create_user(username => $username, password => $password, username_verifiers => $username_verifiers, password_verifiers => $password_verifiers);
 
-	if ($create_user_result->success) {
-		print "Created user " . $create_user_result->user->id . "\n";
-	} else {
+    if ($create_user_result->success) {
+        print "Created user " . $create_user_result->user->id . "\n";
+    } else {
         print "username errors: \n";
         for my $verifier (@{$create_user_result->failed_username_verifiers}) {
             print "\t" . $verifier->error_msg . "\n";
@@ -77,20 +77,20 @@ It is flexible so you can rewrite any of those pieces for your applications' nee
         for my $verifier (@{$create_user_result->failed_password_verifiers}) {
             print "\t" . $verifier->error_msg . "\n";
         }
-	}
+    }
 
-	# create a user with additional values
-	my $user_values => {
-		age => 22,
-		address => '123 Hopper Ln, Austin TX 78705',
-	};
-	my $create_user_result = $web_authenticate->create_user(username => $username, password => $password, $user_values);
+    # create a user with additional values
+    my $user_values => {
+        age => 22,
+        address => '123 Hopper Ln, Austin TX 78705',
+    };
+    my $create_user_result = $web_authenticate->create_user(username => $username, password => $password, $user_values);
 
-	if ($create_user_result->success) {
-		print "Created user " . $create_user_result->user->id . "\n";
-		print "user age " . $create_user_result->user->row->{age} . "\n";
-		print "user address " . $create_user_result->user->row->{address} . "\n";
-	}
+    if ($create_user_result->success) {
+        print "Created user " . $create_user_result->user->id . "\n";
+        print "user age " . $create_user_result->user->row->{age} . "\n";
+        print "user address " . $create_user_result->user->row->{address} . "\n";
+    }
 
 =cut
 
@@ -513,6 +513,7 @@ sub is_authenticated {
 
 =method create_user
 
+=over
 
 =item
 

@@ -15,7 +15,7 @@ with 'Web::Authenticate::Session::Storage::Handler::Role';
 This L<Web::Authenticate::Session::Storage::Handler::Role> is meant to be used with a very specific table structure:
 
     CREATE TABLE sessions (
-    	id INTEGER PRIMARY KEY AUTO_INCREMENT,
+        id INTEGER PRIMARY KEY AUTO_INCREMENT,
         user_id INTEGER NOT NULL UNIQUE,
         session_id VARCHAR(255) NOT NULL UNIQUE,
         expires INTEGER NOT NULL

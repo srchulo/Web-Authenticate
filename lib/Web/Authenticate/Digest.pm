@@ -11,13 +11,13 @@ with 'Web::Authenticate::Digest::Role';
 
 Sets the L<Crypt::PBKDF2> object that is used to create and validate digests. Below is the default:
 
-   	Crypt::PBKDF2->new(
-		hash_class => 'HMACSHA2',
-		hash_args => {
-			sha_size => 512,
-		},
-		iterations => 10000,
-		salt_len => 10,
+    Crypt::PBKDF2->new(
+        hash_class => 'HMACSHA2',
+        hash_args => {
+            sha_size => 512,
+        },
+        iterations => 10000,
+        salt_len => 10,
     )
     
 =cut
@@ -27,14 +27,14 @@ has crypt => (
     is => 'ro',
     required => 1,
     default => sub {
-		Crypt::PBKDF2->new(
-			hash_class => 'HMACSHA2',
-			hash_args => {
-				sha_size => 512,
-			},
-			iterations => 10000,
-			salt_len => 10,
-		);
+        Crypt::PBKDF2->new(
+            hash_class => 'HMACSHA2',
+            hash_args => {
+                sha_size => 512,
+            },
+            iterations => 10000,
+            salt_len => 10,
+        );
     },
 );
 
@@ -48,20 +48,20 @@ Accepts a password and returns the hex digest of that password using L</crypt>.
 
 sub generate {
     my ($self, $password) = @_;
-	return $self->crypt->generate($password);
+    return $self->crypt->generate($password);
 }
 
 =method
 
 Uses L<Crypt::PBKDF2/"validate">.
 
-	my $validate_success = $digest->validate($hash, $password);
+    my $validate_success = $digest->validate($hash, $password);
 
 =cut
 
 sub validate {
-	my ($self, $hash, $password) = @_;
-	return $self->crypt->validate($hash, $password);
+    my ($self, $hash, $password) = @_;
+    return $self->crypt->validate($hash, $password);
 }
 
 1;

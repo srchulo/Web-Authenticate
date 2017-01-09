@@ -55,13 +55,13 @@ has max_length => (
 
 Verifies that value is between L</min_length> and L</max_length>.
 
-	my $success = $verifier->verify($value);
+    my $success = $verifier->verify($value);
 
 =cut
 
 sub verify {
     my ($self, $value) = @_; 
-	my $length = length($value);
+    my $length = length($value);
 
     return $length >= $self->min_length && $length <= $self->max_length;
 }
@@ -70,13 +70,13 @@ sub verify {
 
 Prints message in the form of:
 
-	$name must be between $min_length and $max_length	
+    $name must be between $min_length and $max_length   
 
 =cut
 
 sub error_msg { 
-	my ($self) = @_;
-	return $self->name . ' must be between ' . $self->min_length . ' and ' . $self->max_length;
+    my ($self) = @_;
+    return $self->name . ' must be between ' . $self->min_length . ' and ' . $self->max_length;
 }
 
 1;
