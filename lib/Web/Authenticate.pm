@@ -84,7 +84,7 @@ It is flexible so you can rewrite any of those pieces for your applications' nee
         age => 22,
         address => '123 Hopper Ln, Austin TX 78705',
     };
-    my $create_user_result = $web_authenticate->create_user(username => $username, password => $password, $user_values);
+    my $create_user_result = $web_authenticate->create_user(username => $username, password => $password, user_values => $user_values);
 
     if ($create_user_result->success) {
         print "Created user " . $create_user_result->user->id . "\n";

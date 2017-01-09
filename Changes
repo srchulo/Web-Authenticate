@@ -1,6 +1,9 @@
 Revision history for Web::Authenticate
 
 {{$NEXT}}
+    Fixed documentation.
+
+0.002     2017-01-08 20:32:42-08:00 America/Los_Angeles
     Fixing tabs and pod errors.
 
 0.001     2017-01-08 20:23:07-08:00 America/Los_Angeles
