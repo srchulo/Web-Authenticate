@@ -18,7 +18,7 @@ Loads a user by their id.
 
 =cut
 
-requires 'load_user';
+requires 'load_user_by_id';
 
 =method store_user
 

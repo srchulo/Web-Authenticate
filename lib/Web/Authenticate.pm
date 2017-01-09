@@ -4,12 +4,95 @@ use Mouse;
 use Carp;
 use Web::Authenticate::Cookie::Handler;
 use Web::Authenticate::RedirectHandler;
+use Web::Authenticate::Result::CreateUser;
 use Web::Authenticate::Result::Login;
 use Web::Authenticate::Result::Authenticate;
 use Web::Authenticate::Result::IsAuthenticated;
 use Web::Authenticate::RequestUrlProvider::CgiRequestUrlProvider;
 use Ref::Util qw/is_arrayref/;
 #ABSTRACT: Allows web authentication using cookies and a storage engine. 
+
+=head1 DESCRIPTION
+
+This modules allows easy management of user authentication via cookies, redirects, a storage engine, a session handler, and cookie handler.
+It is flexible so you can rewrite any of those pieces for your applications' needs.
+
+=cut
+
+=head1 SYNOPSIS
+
+	my $dbix_raw = DBIx::Raw->new(dsn => 'dbi:mysql:test:127.0.0.1:3306', user => 'user', password => 'password');
+    my $user_storage_handler = Web::Authenticate::User::Storage::Handler::SQL->new(dbix_raw => $dbix_raw);
+    my $storage_handler = Web::Authenticate::Session::Storage::Handler::SQL->new(dbix_raw => $dbix_raw, user_storage_handler => $user_storage_handler);
+    my $session_handler = Web::Authenticate::Session::Handler->new(session_storage_handler => $storage_handler);
+    my $web_authenticate = Web::Authenticate->new(
+        user_storage_handler => $user_storage_handler,
+        session_handler => $session_handler,
+        after_login_url => 'http://www.google.com/account.cgi',
+        after_logout_url => 'http://www.google.com/',
+        login_url => 'http://www.google.com/login.cgi',
+    );  
+
+	# login user
+	my $login_result = $web_authenticate->login(login_args => [$username, $password]);
+
+	if ($login_result->success) {
+		# success!
+	}
+
+	# authenticate a user to be on a page just with their session
+	my $authenticate_result = $web_authenticate->authenticate;
+
+	if ($authenticate_result->succes) {
+		# success! allowed to access page
+	} 
+
+	# authenticate user with authenticators
+	my $authenticate_result = $web_authenticate->authenticate(authenticators => $authenticators);
+
+	if ($authenticate_result->succes) {
+		# success! allowed to access page
+	} 
+
+	
+	# create a user
+	my $create_user_result = $web_authenticate->create_user(username => $username, password => $password);
+
+	if ($create_user_result->success) {
+		print "Created user " . $create_user_result->user->id . "\n";
+	}
+
+	# create a user and verify username and password meet requirements
+	my $create_user_result = $web_authenticate->create_user(username => $username, password => $password, username_verifiers => $username_verifiers, password_verifiers => $password_verifiers);
+
+	if ($create_user_result->success) {
+		print "Created user " . $create_user_result->user->id . "\n";
+	} else {
+        print "username errors: \n";
+        for my $verifier (@{$create_user_result->failed_username_verifiers}) {
+            print "\t" . $verifier->error_msg . "\n";
+        }
+
+        print "password errors: \n";
+        for my $verifier (@{$create_user_result->failed_password_verifiers}) {
+            print "\t" . $verifier->error_msg . "\n";
+        }
+	}
+
+	# create a user with additional values
+	my $user_values => {
+		age => 22,
+		address => '123 Hopper Ln, Austin TX 78705',
+	};
+	my $create_user_result = $web_authenticate->create_user(username => $username, password => $password, $user_values);
+
+	if ($create_user_result->success) {
+		print "Created user " . $create_user_result->user->id . "\n";
+		print "user age " . $create_user_result->user->row->{age} . "\n";
+		print "user address " . $create_user_result->user->row->{address} . "\n";
+	}
+
+=cut
 
 =method user_storage_handler
 
@@ -430,13 +513,101 @@ sub is_authenticated {
 
 =method create_user
 
+
+=item
+
+B<username (required)> - The username for the user to create.
+
+=item
+
+B<password (required)> - The password for the user to create.
+
+=item 
+
+B<username_verifiers (optional)> - optional arrayref of L<Web::Authenticate::User::CredentialVerifier> to verify if an entered username is correct.
+
+=item 
+
+B<password_verifiers (optional)> - optional arrayref of L<Web::Authenticate::User::CredentialVerifier> to verify if an entered password is correct.
+
+=item 
+
+B<user_values (optional)> - optional hashref where column names are the keys and the values for those columns are the values. These values will be
+passed on to L<Web::Authenticate::User::Storage::Handler::Role> when creating the user.
+
+=back
+
+This is a convenience method that can be used if the L<Web::Authenticate::User::Storage::Handler::Role> you are using accepts its 
+L<Web::Authenticate::User::Storage::Handler::Role/store_user> arguments as:
+
+    store_user($username, $password, $user_values)
+
+Such as L<Web::Authenticate::User::Storage::Handler::SQL>.
+
+    my $create_user_result = $web_authenticate->create_user(
+        username => $username, 
+        password => $password, 
+        username_verifiers => $username_verifiers, 
+        password_verifiers => $password_verifiers,
+        user_values => {
+            age => $age,
+            insert_time => \'NOW()',
+        },
+    );
+
+    if ($create_user_result->success) {
+        print "User " . $create_user_result->user->id . " created\n";
+    } else {
+        print "username errors: \n";
+        for my $verifier (@{$create_user_result->failed_username_verifiers}) {
+            print "\t" . $verifier->error_msg . "\n";
+        }
+
+        print "password errors: \n";
+        for my $verifier (@{$create_user_result->failed_password_verifiers}) {
+            print "\t" . $verifier->error_msg . "\n";
+        }
+    }
 =cut
 
 sub create_user {
-    # take in requirements
-    # pass requirements
-    # username requirements
-    # runt tests on both. If they all pass, create user. Return failing ones
+    my ($self) = shift;
+    my %params = @_;
+
+    my $username = delete $params{username};
+    my $password = delete $params{password};
+    croak "must provide username" unless $username;
+    croak "must provide password" unless $password;
+
+    my $username_verifiers = delete $params{username_verifiers};
+    my $password_verifiers = delete $params{password_verifiers};
+
+    _validate_role_arrayref('username_verifiers', $username_verifiers, 'Web::Authenticate::User::CredentialVerifier::Role');
+    _validate_role_arrayref('password_verifiers', $password_verifiers, 'Web::Authenticate::User::CredentialVerifier::Role');
+
+    $username_verifiers //= [];
+    $password_verifiers //= [];
+
+    my @failed_username_verifiers;
+    for my $verifier (@$username_verifiers) {
+        unless ($verifier->verify($username)) {
+            push @failed_username_verifiers, $verifier;
+        }
+    }
+
+    my @failed_password_verifiers;
+    for my $verifier (@$password_verifiers) {
+        unless ($verifier->verify($password)) {
+            push @failed_password_verifiers, $verifier;
+        }
+    }
+
+    if (@failed_username_verifiers or @failed_password_verifiers) {
+        return Web::Authenticate::Result::CreateUser->new(success => undef, failed_username_verifiers => \@failed_username_verifiers, failed_password_verifiers => \@failed_password_verifiers);  
+    }
+
+    my $user = $self->user_storage_handler->store_user($username, $password, $params{user_values});
+    return Web::Authenticate::Result::CreateUser->new(success => 1, user => $user);
 }
 
 sub _validate_role_arrayref {

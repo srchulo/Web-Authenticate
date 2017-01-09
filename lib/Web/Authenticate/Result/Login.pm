@@ -5,7 +5,7 @@ use Mouse;
 
 =method success
 
-Returns 1 if the call to login was successful, undef otherwise.
+Returns 1 if the call to L<Web::Authenticate/login> was successful, undef otherwise.
 
 =cut
 
@@ -28,7 +28,7 @@ has user => (
 
 =method failed_authenticator
 
-Returns the authenticator that caused the login to fail, if there was one.
+Returns the authenticator that caused the L<Web::Authenticate/login> to fail, if there was one.
 
 =cut
 
