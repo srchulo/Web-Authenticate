@@ -298,7 +298,7 @@ sub store_session {
     my $session_id_field = $self->session_id_field;
     my $expires_field = $self->expires_field;
 
-    $session_values //= {};
+    $session_values ||= {};
     $session_values->{$user_id_field} = $user->id;
     $session_values->{$session_id_field} = $self->session_id_digest_hex->($session_id);
     $session_values->{$expires_field} = $expires;

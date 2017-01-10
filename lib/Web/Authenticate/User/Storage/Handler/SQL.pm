@@ -214,7 +214,7 @@ sub store_user {
     my $username_field = $self->username_field;
     my $password_field = $self->password_field;
 
-    $user_values //= {};
+    $user_values ||= {};
     $user_values->{$username_field} = $username;
     $user_values->{$password_field} = $self->digest->generate($password);;
 

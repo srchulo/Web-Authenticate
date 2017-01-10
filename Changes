@@ -1,6 +1,9 @@
 Revision history for Web::Authenticate
 
 {{$NEXT}}
+    Changed //= to ||=
+
+0.004     2017-01-09 22:37:24-08:00 America/Los_Angeles
     Added ability to void sessions if user agent or ip address change.
 
 0.003     2017-01-09 01:42:00-08:00 America/Los_Angeles

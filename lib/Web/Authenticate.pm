@@ -313,8 +313,8 @@ sub login {
     _validate_role_arrayref('authenticators', $params{authenticators}, 'Web::Authenticate::Authenticator::Role');
     _validate_role_arrayref('auth_redirects', $params{auth_redirects}, 'Web::Authenticate::Authenticator::Redirect::Role');
 
-    $params{authenticators} //= [];
-    $params{auth_redirects} //= [];
+    $params{authenticators} ||= [];
+    $params{auth_redirects} ||= [];
 
     my $user = $self->user_storage_handler->load_user(@{$params{login_args}});
 
@@ -413,7 +413,7 @@ sub authenticate {
 
     _validate_role_arrayref('auth_redirects', $params{auth_redirects}, 'Web::Authenticate::Authenticator::Redirect::Role');
 
-    $params{auth_redirects} //= [];
+    $params{auth_redirects} ||= [];
 
     my $is_authenticated = $self->is_authenticated(@_, redirect => 1);
 
@@ -482,7 +482,7 @@ sub is_authenticated {
 
     _validate_role_arrayref('authenticators', $params{authenticators}, 'Web::Authenticate::Authenticator::Role');
 
-    $params{authenticators} //= [];
+    $params{authenticators} ||= [];
 
     my $session = $self->session_handler->get_session;
 
@@ -586,8 +586,8 @@ sub create_user {
     _validate_role_arrayref('username_verifiers', $username_verifiers, 'Web::Authenticate::User::CredentialVerifier::Role');
     _validate_role_arrayref('password_verifiers', $password_verifiers, 'Web::Authenticate::User::CredentialVerifier::Role');
 
-    $username_verifiers //= [];
-    $password_verifiers //= [];
+    $username_verifiers ||= [];
+    $password_verifiers ||= [];
 
     my @failed_username_verifiers;
     for my $verifier (@$username_verifiers) {
