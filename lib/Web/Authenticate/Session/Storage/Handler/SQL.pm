@@ -3,6 +3,7 @@ package Web::Authenticate::Session::Storage::Handler::SQL;
 use Mouse;
 use Carp;
 use DateTime;
+use Digest::SHA;
 use DBIx::Raw;
 use Web::Authenticate::Digest;
 use Web::Authenticate::IpAddressProvider::EnvIpAddressProvider;
