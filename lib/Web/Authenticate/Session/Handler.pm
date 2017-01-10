@@ -95,7 +95,7 @@ sub delete_session {
     return unless $session_id;
 
     $self->session_storage_handler->delete_session($session_id);
-    $self->cookie_handler->delete_cookie($self->session_id_cookie_name);
+    $self->_delete_session_cookie;
 }
 
 =method update_expires
@@ -127,7 +127,8 @@ sub invalidate_user_sessions {
 
 =method get_session
 
-Returns the session for the logged in user. Returns undef if there is no session.
+Returns the session for the logged in user. Returns undef if there is no session. If an invalid
+session is found in the user's cookies, that session will be deleted from their cookies.
 
 =cut
 
@@ -138,7 +139,11 @@ sub get_session {
 
     return unless $session_id;
 
-    return $self->session_storage_handler->load_session($session_id);
+    my $session = $self->session_storage_handler->load_session($session_id);
+
+    $self->_delete_session_cookie unless $session;
+
+    return $session;
 }
 
 sub _get_session_id {
@@ -154,6 +159,11 @@ sub _get_expires {
 sub _set_session_cookie {
     my ($self, $session_id) = @_;
     $self->cookie_handler->set_cookie($self->session_id_cookie_name, $session_id, $self->session_expires_in_seconds);
+}
+
+sub _delete_session_cookie {
+    my ($self) = @_;
+    $self->cookie_handler->delete_cookie($self->session_id_cookie_name);
 }
 
 1;

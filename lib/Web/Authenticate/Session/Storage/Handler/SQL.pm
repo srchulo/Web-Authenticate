@@ -4,6 +4,9 @@ use Mouse;
 use Carp;
 use DateTime;
 use DBIx::Raw;
+use Web::Authenticate::Digest;
+use Web::Authenticate::IpAddressProvider::EnvIpAddressProvider;
+use Web::Authenticate::UserAgentProvider::EnvUserAgentProvider;
 use Web::Authenticate::Session;
 use Web::Authenticate::User::Storage::Handler::SQL;
 #ABSTRACT: Implementation of Web::Authenticate::Session::Storage::Handler::Role that can be used with MySQL or SQLite.
@@ -85,6 +88,119 @@ has user_id_field => (
     default => 'user_id',
 );
 
+=method require_same_user_agent
+
+A session id will only be valid from the user agent it was originally created on. If invalid, the session will be deleted in storage.
+If this is set to true, a user agent field is required in the table. It should be a varchar 255 like so:
+
+    CREATE TABLE sessions (
+        id INTEGER PRIMARY KEY AUTO_INCREMENT,
+        user_id INTEGER NOT NULL UNIQUE,
+        session_id VARCHAR(255) NOT NULL UNIQUE,
+        user_agent VARCHAR(255),
+        expires INTEGER NOT NULL
+    );
+
+See L</user_agent_field> to change the default name of the field.
+
+=cut
+
+has require_same_user_agent => (
+    isa => 'Bool',
+    is => 'ro',
+    required => 1,
+    default => undef,
+
+);
+
+=method require_same_ip_address
+
+A session id will only be valid from the ip address it was originally created from. If invalid, the session will be deleted in storage.
+If this is set to true, an ip address field is required in the table. It should be a varchar 255 like so:
+
+    CREATE TABLE sessions (
+        id INTEGER PRIMARY KEY AUTO_INCREMENT,
+        user_id INTEGER NOT NULL UNIQUE,
+        session_id VARCHAR(255) NOT NULL UNIQUE,
+        ip_address VARCHAR(255),
+        expires INTEGER NOT NULL
+    );
+
+See L</ip_address_field> to change the default name of the field.
+
+=cut
+
+has require_same_ip_address => (
+    isa => 'Bool',
+    is => 'ro',
+    required => 1,
+    default => undef,
+);
+
+=method digest
+
+Sets the L<Web::Authenticate::Digest::Role> that is used for user agents if L</require_same_user_agent> is set to true or ip addresses if 
+L</require_same_ip_address> is set to true. Default is L<Web::Authenticate::Digest>.
+
+=cut
+
+has digest => (
+    does => 'Web::Authenticate::Digest::Role',
+    is => 'ro',
+    required => 1,
+    default => sub { Web::Authenticate::Digest->new },
+);
+
+=method user_agent_provider
+
+Sets the object that does L<Web::Authenticate::UserAgentProvider::Role>. Default is L<Web::Authenticate::UserAgentProvider::EnvUserAgentProvider>.
+
+=cut
+
+has user_agent_provider => (
+    does => 'Web::Authenticate::UserAgentProvider::Role',
+    is => 'ro',
+    default => sub { Web::Authenticate::UserAgentProvider::EnvUserAgentProvider->new },
+);
+
+=method ip_address_provider
+
+Sets the object that does L<Web::Authenticate::IpAddressProvider::Role>. Default is L<Web::Authenticate::IpAddressProvider::EnvIpAdderssProvider>.
+
+=cut
+
+has ip_address_provider => (
+    does => 'Web::Authenticate::IpAddressProvider::Role',
+    is => 'ro',
+    default => sub { Web::Authenticate::IpAddressProvider::EnvIpAddressProvider->new },
+);
+
+=method user_agent_field
+
+Sets the name of the user agent field if L</require_same_user_agent> is set to 1. Default is 'user_agent'.
+
+=cut
+
+has user_agent_field => (
+    isa => 'Str',
+    is => 'ro',
+    required => 1,
+    default => 'user_agent',
+);
+
+=method ip_address_field
+
+Sets the name of the ip address field if L</require_same_ip_address> is set to 1. Default is 'ip_address'.
+
+=cut
+
+has ip_address_field => (
+    isa => 'Str',
+    is => 'ro',
+    required => 1,
+    default => 'ip_address',
+);
+
 =method expires_field
 
 Sets the name of the expires time field that will be used when querying the database. Default is 'expires'.
@@ -141,6 +257,20 @@ has columns => (
     default => sub { [] },
 );
 
+=method session_id_digest_hex
+
+This is a subroutine reference to the digest hex that will be used when storing the session id.
+Default is L<Digest::SHA::sha512_hex|Digest::SHA>.
+
+=cut
+
+has session_id_digest_hex => (
+    isa => 'CodeRef',
+    is => 'ro',
+    required => 1,
+    default => sub { \&Digest::SHA::sha512_hex },
+);
+
 =method store_session
 
 Takes in user, session_id, expires, and any additional values for columns in a hash and a session with those values is created.
@@ -169,26 +299,36 @@ sub store_session {
 
     $session_values //= {};
     $session_values->{$user_id_field} = $user->id;
-    $session_values->{$session_id_field} = $session_id;
+    $session_values->{$session_id_field} = $self->session_id_digest_hex->($session_id);
     $session_values->{$expires_field} = $expires;
+
+    if ($self->require_same_user_agent) {
+       $session_values->{$self->user_agent_field} = $self->digest->generate($self->user_agent_provider->get_user_agent); 
+    }
+
+    if ($self->require_same_ip_address) {
+       $session_values->{$self->ip_address_field} = $self->digest->generate($self->ip_address_provider->get_ip_address); 
+    }
 
     $self->dbix_raw->insert(href => $session_values, table => $sessions_table);
 
     my $selection = $self->_get_selection($user_id_field, $session_id_field, $expires_field);
-    my $session = $self->dbix_raw->raw("SELECT $selection FROM $sessions_table WHERE $session_id_field = ?", $session_id);
+    my $session = $self->dbix_raw->raw("SELECT $selection FROM $sessions_table WHERE $session_id_field = ?", $self->session_id_digest_hex->($session_id));
 
     unless ($session) {
         carp "failed to insert session to database";
         return;
     }
 
-    return Web::Authenticate::Session->new(id => $session->{$session_id_field}, expires => $session->{$expires_field}, user => $user, row => $session);
+    return Web::Authenticate::Session->new(id => $session_id, expires => $session->{$expires_field}, user => $user, row => $session);
 }
 
 =method load_session
 
 Loads a L<Web::Authenticate::Session> by session_id. If the session exists, the session is returned.
-Otherwise, undef is returned. Any additional L</columns> will be stored in L<Web::Authenticate::Session/row>. 
+Otherwise, undef is returned. Undef will also be returned if the session is expires, or if the user agent or ip address don't match
+if L</require_same_user_agent> or L</require_same_ip_address> are set. 
+Any additional L</columns> will be stored in L<Web::Authenticate::Session/row>. 
 
     my $session = $session_storage_handler->load_session($session_id);
 
@@ -202,13 +342,49 @@ sub load_session {
     my $user_id_field = $self->user_id_field;
     my $session_id_field = $self->session_id_field;
     my $expires_field = $self->expires_field;
+    my $user_agent_field = $self->user_agent_field;
+    my $ip_address_field = $self->ip_address_field;
 
     my $now = DateTime->now->epoch;
-    my $selection = $self->_get_selection($user_id_field, $session_id_field, $expires_field);
-    my $session = $self->dbix_raw->raw("SELECT $selection FROM $sessions_table WHERE $session_id_field = ? AND $expires_field >= $now", $session_id);
+
+    my @select_args;
+    push @select_args, ($user_id_field, $session_id_field, $expires_field);
+
+    if ($self->require_same_user_agent) {
+        push @select_args, $user_agent_field;
+    }
+
+    if ($self->require_same_ip_address) {
+        push @select_args, $ip_address_field;
+    }
+
+    my $selection = $self->_get_selection(@select_args);
+    my $session = $self->dbix_raw->raw("SELECT $selection FROM $sessions_table WHERE $session_id_field = ? AND $expires_field >= $now", $self->session_id_digest_hex->($session_id));
 
     unless ($session) {
         return;
+    }
+
+    if ($self->require_same_user_agent) {
+        my $user_agent = $session->{$user_agent_field};
+        unless ($user_agent) {
+            croak "there should be a user agent for session $session_id with digest_hex of " . $self->session_id_digest_hex->($session_id);
+        }
+        unless ($self->digest->validate($user_agent, $self->user_agent_provider->get_user_agent)) {
+            $self->delete_session($session_id);
+            return;
+        }
+    }
+
+    if ($self->require_same_ip_address) {
+        my $ip_address = $session->{$ip_address_field};
+        unless ($ip_address) { 
+            croak "there should be an ip address for session $session_id with digest_hex of " . $self->session_id_digest_hex->($session_id);
+        }
+        unless ($self->digest->validate($ip_address, $self->ip_address_provider->get_ip_address)) {
+            $self->delete_session($session_id);
+            return;
+        }
     }
 
     my $user = $self->user_storage_handler->load_user_by_id($session->{$user_id_field});
@@ -218,7 +394,7 @@ sub load_session {
         return;
     }
 
-    return Web::Authenticate::Session->new(id => $session->{$session_id_field}, expires => $session->{$expires_field}, user => $user, row => $session);
+    return Web::Authenticate::Session->new(id => $session_id, expires => $session->{$expires_field}, user => $user, row => $session);
 }
 
 =method delete_session
@@ -235,7 +411,7 @@ sub delete_session {
 
     my $sessions_table = $self->sessions_table;
     my $session_id_field = $self->session_id_field;
-    $self->dbix_raw->raw("DELETE FROM $sessions_table WHERE $session_id_field = ?", $session_id);
+    $self->dbix_raw->raw("DELETE FROM $sessions_table WHERE $session_id_field = ?", $self->session_id_digest_hex->($session_id));
 }
 
 =method invalidate_user_sessions
@@ -272,7 +448,7 @@ sub update_expires {
     my $sessions_table = $self->sessions_table;
     my $session_id_field = $self->session_id_field;
     my $expires_field = $self->expires_field;
-    $self->dbix_raw->raw("UPDATE $sessions_table SET $expires_field = ? WHERE $session_id_field = ?", $expires, $session_id);
+    $self->dbix_raw->raw("UPDATE $sessions_table SET $expires_field = ? WHERE $session_id_field = ?", $expires, $self->session_id_digest_hex->($session_id));
 }
 
 sub _get_selection {
