@@ -137,7 +137,7 @@ Deletes all sessions for user.
 
 sub invalidate_user_sessions {
     my ($self, $user) = @_;
-    $self->session_storage_handler->invalidate_user_sessions($user, $self->_get_session_id);
+    $self->session_storage_handler->invalidate_user_sessions($user);
 }
 
 =method get_session

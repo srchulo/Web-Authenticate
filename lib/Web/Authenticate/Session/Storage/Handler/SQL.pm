@@ -28,7 +28,7 @@ This L<Web::Authenticate::Session::Storage::Handler::Role> is meant to be used w
 Other columns can exists, and the names of the table and column can change. But at least these columns must exist
 in order for this storage handler to work properly. Also, the primary key does not have to be an integer, and could
 even be the session_id. Also, the user_id does not need to be unique if you want to allow multiple sessions for a
-user by setting L<Web::Authenticate/allow_multiple_session_per_user> to true.
+user by setting L<Web::Authenticate/allow_multiple_sessions_per_user> to true.
 
 =cut
 
@@ -410,7 +410,7 @@ Invalidates (deletes) any user sessions for user.
 =cut
 
 sub invalidate_user_sessions {
-    my ($self, $user, $session_id) = @_;
+    my ($self, $user) = @_;
     croak "must provide user" unless $user;
 
     my $sessions_table = $self->sessions_table;
