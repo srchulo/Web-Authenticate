@@ -25,7 +25,7 @@ requires 'name';
 
 =method error_msg
 
-Returns the error message if this verifier fails
+Returns the error message if this verifier fails.
 
 =cut
 

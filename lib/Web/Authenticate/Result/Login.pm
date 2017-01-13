@@ -15,9 +15,23 @@ has success => (
     required => 1,
 );
 
+=method invalid_username_or_password
+
+Returns 1 if the username and/or password were invalid. Undef otherwise. This is the same as checking if
+L</user> is undef.
+
+=cut
+
+has invalid_username_or_password => (
+    isa => 'Bool',
+    is => 'ro',
+    lazy => 1,
+    default => sub { not shift->user },
+);
+
 =method user
 
-Returns the user that was logged in.
+Returns the user that was logged in. Checking if this is undef is the same as calling L</invalid_username_or_password>.
 
 =cut
 

@@ -256,6 +256,20 @@ has allow_after_login_redirect_time_seconds => (
     default => 300,
 );
 
+=method allow_multiple_session_per_user
+
+A bool (1 or undef) whether or not to allow multiple sessions per user. If set to true, when L<Web::Authenticate::Session::Handler::Role/invalidate_user_sessions> will
+not be called. Default is false.
+
+=cut
+
+has allow_multiple_session_per_user => (
+    isa => 'Bool',
+    is => 'ro',
+    required => 1,
+    default => undef,
+);
+
 has _after_login_redirect_override_cookie_name => (
     isa => 'Str',
     is => 'ro',
@@ -325,7 +339,11 @@ sub login {
             unless $authenticator->authenticate($user);
     }
     
-    $self->session_handler->invalidate_user_sessions($user);
+    $self->session_handler->invalidate_current_session;
+
+    unless ($self->allow_multiple_session_per_user) {
+        $self->session_handler->invalidate_user_sessions($user);
+    }
     $self->session_handler->create_session($user);
 
     my $redirect_url = $self->after_login_url;

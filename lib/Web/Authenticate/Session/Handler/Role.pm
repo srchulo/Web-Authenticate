@@ -33,6 +33,16 @@ Updates the expires time for session. Returns an object that does L<Web::Authent
 
 requires 'update_expires';
 
+=method invalidate_current_session
+
+Invalidates the current session if the user has one.
+
+    $session_handler->invalidate_current_session;
+
+=cut
+
+requires 'invalidate_current_session';
+
 =method invalidate_user_sessions
 
 Invalidates all sessions for a user.

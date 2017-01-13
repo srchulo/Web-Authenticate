@@ -114,6 +114,21 @@ sub update_expires {
     $self->_set_session_cookie($session_id);
 }
 
+=method invalidate_current_session
+
+Invalidates the user's current session if there is one.
+
+=cut
+
+sub invalidate_current_session {
+    my ($self) = @_;
+
+    my $session_id = $self->_get_session_id;
+    if ($session_id) {
+        $self->session_storage_handler->delete_session($session_id);
+    }
+}
+
 =method invalidate_user_sessions
 
 Deletes all sessions for user.
@@ -122,7 +137,7 @@ Deletes all sessions for user.
 
 sub invalidate_user_sessions {
     my ($self, $user) = @_;
-    $self->session_storage_handler->invalidate_user_sessions($user);
+    $self->session_storage_handler->invalidate_user_sessions($user, $self->_get_session_id);
 }
 
 =method get_session

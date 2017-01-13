@@ -28,7 +28,7 @@ This L<Web::Authenticate::Session::Storage::Handler::Role> is meant to be used w
 Other columns can exists, and the names of the table and column can change. But at least these columns must exist
 in order for this storage handler to work properly. Also, the primary key does not have to be an integer, and could
 even be the session_id. Also, the user_id does not need to be unique if you want to allow multiple sessions for a
-user by setting L</allow_multiple_session_per_user> to true.
+user by setting L<Web::Authenticate/allow_multiple_session_per_user> to true.
 
 =cut
 
@@ -213,20 +213,6 @@ has expires_field => (
     is => 'ro',
     required => 1,
     default => 'expires',
-);
-
-=method allow_multiple_session_per_user
-
-A bool (1 or undef) whether or not to allow multiple sessions per user. If set to true, when L</invalidate_user_sessions> is
-called nothing will happen. Default is false.
-
-=cut
-
-has allow_multiple_session_per_user => (
-    isa => 'Bool',
-    is => 'ro',
-    required => 1,
-    default => undef,
 );
 
 =method dbix_raw
@@ -417,16 +403,15 @@ sub delete_session {
 
 =method invalidate_user_sessions
 
-Invalidates (deletes) any user sessions for user unless L</allow_multiple_session_per_user> is set to true.
+Invalidates (deletes) any user sessions for user.
 
     $session_storage_handler->invalidate_user_sessions($user);
 
 =cut
 
 sub invalidate_user_sessions {
-    my ($self, $user) = @_;
+    my ($self, $user, $session_id) = @_;
     croak "must provide user" unless $user;
-    return if $self->allow_multiple_session_per_user;
 
     my $sessions_table = $self->sessions_table;
     my $user_id_field = $self->user_id_field;

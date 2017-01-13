@@ -32,6 +32,8 @@ Updates the time a session expires.
 
 =cut
 
+requires 'update_expires';
+
 =method delete_session
 
 Deletes a session from storage.
@@ -41,8 +43,6 @@ Deletes a session from storage.
 =cut
 
 requires 'delete_session';
-
-requires 'update_expires';
 
 =method invalidate_user_sessions
 
