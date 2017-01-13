@@ -3,7 +3,7 @@ package Web::Authenticate::Authenticator::Redirect::Role;
 use Mouse::Role;
 #ABSTRACT: A Mouse::Role that defines what methods a Web::Authenticate::Authenticator::Redirect object should contain.
 
-=method authenticate
+=method authenticator
 
 Returns the L<Web::Authenticate::Authenticator::Role> associated with this L<Web::Authenticate::Authenticator::Redirect::Role>.
 

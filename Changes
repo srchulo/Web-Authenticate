@@ -1,6 +1,9 @@
 Revision history for Web::Authenticate
 
 {{$NEXT}}
+    Updated typo in Web::Authenticate::Authenticator::Redirect::Role
+
+0.007     2017-01-12 22:54:18-08:00 America/Los_Angeles
 	Authenticators now require a name and error message. Current session is always deleted. Allow multiple sessions per user moved to Authenticate.pm. 
 	Login result now tells you if username or password was invalid.
  
