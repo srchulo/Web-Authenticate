@@ -1,6 +1,9 @@
 Revision history for Web::Authenticate
 
 {{$NEXT}}
+    Set override up to work properly in is_authenticated for allow_after_login_redirect_override.
+
+0.010     2017-01-14 18:05:30-08:00 America/Los_Angeles
     Fixed documentation for Web::Authenticate::Result::CheckForSession and fixed bug where check_for_session would cause you to redirect to login page.
 
 0.009     2017-01-14 17:32:36-08:00 America/Los_Angeles

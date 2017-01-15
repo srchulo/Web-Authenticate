@@ -506,12 +506,14 @@ sub is_authenticated {
     _validate_role_arrayref('authenticators', $params{authenticators}, 'Web::Authenticate::Authenticator::Role');
 
     $params{authenticators} ||= [];
-    $params{allow_after_login_redirect_override} = $self->allow_after_login_redirect_override unless exists $params{allow_after_login_redirect_override};
 
     my $session = $self->session_handler->get_session;
 
     unless ($session) {
-        if ($self->allow_after_login_redirect_override and $params{allow_after_login_redirect_override}) {
+        my $allow_after_login_redirect_override =
+            exists $params{allow_after_login_redirect_override}
+            ? $params{allow_after_login_redirect_override} : $self->allow_after_login_redirect_override;
+        if ($allow_after_login_redirect_override) {
             my $url = $self->request_url_provider->url;
             $self->cookie_handler->set_cookie($self->_after_login_redirect_override_cookie_name, $url, $self->allow_after_login_redirect_time_seconds);
         }
