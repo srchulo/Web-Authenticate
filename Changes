@@ -1,6 +1,9 @@
 Revision history for Web::Authenticate
 
 {{$NEXT}}
+    Fixed documentation for Web::Authenticate::Result::CheckForSession and fixed bug where check_for_session would cause you to redirect to login page.
+
+0.009     2017-01-14 17:32:36-08:00 America/Los_Angeles
     Added check_for_session. Also moved deleting invalid sessions to session handler.
 
 0.008     2017-01-12 23:06:00-08:00 America/Los_Angeles

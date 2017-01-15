@@ -471,6 +471,10 @@ authenticate, then the user will be redirected to L</authenticate_fail_url>.
 
 B<redirect (optional)> - If set to true, this method will redirect appropriately if the user does not authenticate.
 
+=item
+
+B<allow_after_login_redirect_override (optional)> - Can override L</allow_after_login_redirect_override> for this call. Defaults to L</allow_after_login_redirect_override>.
+
 =back
 
 First makes sure that the user authenticates as being logged in with a session. If the user is not, the user is redirected to L</login_url> if redirect is set to 1.
@@ -502,11 +506,12 @@ sub is_authenticated {
     _validate_role_arrayref('authenticators', $params{authenticators}, 'Web::Authenticate::Authenticator::Role');
 
     $params{authenticators} ||= [];
+    $params{allow_after_login_redirect_override} = $self->allow_after_login_redirect_override unless exists $params{allow_after_login_redirect_override};
 
     my $session = $self->session_handler->get_session;
 
     unless ($session) {
-        if ($self->allow_after_login_redirect_override) {
+        if ($self->allow_after_login_redirect_override and $params{allow_after_login_redirect_override}) {
             my $url = $self->request_url_provider->url;
             $self->cookie_handler->set_cookie($self->_after_login_redirect_override_cookie_name, $url, $self->allow_after_login_redirect_time_seconds);
         }
@@ -557,7 +562,7 @@ sub check_for_session {
     my $self = shift;
     my %params = @_;
 
-    my $result = $self->is_authenticated;
+    my $result = $self->is_authenticated(allow_after_login_redirect_override => undef);
 
     return Web::Authenticate::Result::CheckForSession->new(success => undef) unless $result->success;
 

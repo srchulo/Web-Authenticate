@@ -89,9 +89,9 @@ Deletes the current session.
 =cut
 
 sub delete_session {
-    my ($self) = @_;
+    my ($self, $session_id) = @_;
 
-    my $session_id = $self->_get_session_id;
+    $session_id ||= $self->_get_session_id;
     return unless $session_id;
 
     $self->session_storage_handler->delete_session($session_id);
@@ -159,8 +159,7 @@ sub get_session {
     my $session = $self->session_storage_handler->load_session($session_id);
 
     unless ($session) {
-        $self->session_storage_handler->delete_session($session_id);
-        $self->_delete_session_cookie;
+        $self->delete_session($session_id);
     }
 
     return $session;

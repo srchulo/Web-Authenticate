@@ -18,7 +18,7 @@ has success => (
 
 =method user
 
-Returns the user that was logged in. Checking if this is undef is the same as calling L</invalid_username_or_password>.
+Returns the user that has a valid session.
 
 =cut
 
@@ -29,7 +29,7 @@ has user => (
 
 =method auth_redir
 
-Returns the L<Web::Authenticate::Authenticator::Redirect::Role> object that login used to redirect.
+Returns the L<Web::Authenticate::Authenticator::Redirect::Role> object that check_for_session used to redirect.
 
 =cut
 
