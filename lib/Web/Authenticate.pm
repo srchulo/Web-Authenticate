@@ -8,6 +8,7 @@ use Web::Authenticate::Result::CreateUser;
 use Web::Authenticate::Result::Login;
 use Web::Authenticate::Result::Authenticate;
 use Web::Authenticate::Result::IsAuthenticated;
+use Web::Authenticate::Result::CheckForSession;
 use Web::Authenticate::RequestUrlProvider::CgiRequestUrlProvider;
 use Ref::Util qw/is_arrayref/;
 #ABSTRACT: Allows web authentication using cookies and a storage engine. 
@@ -527,6 +528,58 @@ sub is_authenticated {
     }
 
     return Web::Authenticate::Result::IsAuthenticated->new(success => 1, user => $user);
+}
+
+=method check_for_session 
+
+=over
+
+=item 
+
+B<auth_redirects (optional)> - An arrayref of L<Web::Authenticate::Authenticator::Redirect::Role>. If the user is authenticated successfully with a session, they will 
+be redirected to the L<Web::Authenticate::Authenticator::Redirect::Role/url> of the first L<Web::Authenticate::Authenticator::Redirect::Role/authenticator>
+that authenticates. If none of the auth_redirects authenticate, then the user will be redirected to L</after_login_url>.
+
+=back
+
+This is meant to be used on the login page if you do not want users to be able to login if they are already authenticated.
+
+    $web_authenticate->check_for_session;
+
+    # or with auth redirects
+    $web_authenticate->check_for_session(auth_redirects => $auth_redirects);
+
+Returns L<Web::Authenticate::Result::CheckForSession>.
+
+=cut
+
+sub check_for_session {
+    my $self = shift;
+    my %params = @_;
+
+    my $result = $self->is_authenticated;
+
+    return Web::Authenticate::Result::CheckForSession->new(success => undef) unless $result->success;
+
+    my $user = $result->user;
+    my $redirect_url;
+    my $result_auth_redirect;
+    if ($params{auth_redirects}) {
+        for my $auth_redirect (@{$params{auth_redirects}}) {
+            if ($auth_redirect->authenticator->authenticate($user)) {
+                $redirect_url = $auth_redirect->url;
+                $result_auth_redirect = $auth_redirect;
+                last;
+            }
+        }
+    }
+
+    unless ($redirect_url) {
+        $redirect_url = $self->after_login_url;
+    }
+
+    $self->redirect_handler->redirect($redirect_url);
+    return Web::Authenticate::Result::CheckForSession->new(success => 1, user => $user, auth_redir => $result_auth_redirect);
 }
 
 =method create_user

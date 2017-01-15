@@ -1,6 +1,9 @@
 Revision history for Web::Authenticate
 
 {{$NEXT}}
+    Added check_for_session. Also moved deleting invalid sessions to session handler.
+
+0.008     2017-01-12 23:06:00-08:00 America/Los_Angeles
     Updated typo in Web::Authenticate::Authenticator::Redirect::Role
 
 0.007     2017-01-12 22:54:18-08:00 America/Los_Angeles

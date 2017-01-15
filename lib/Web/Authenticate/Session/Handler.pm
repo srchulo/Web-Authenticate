@@ -143,7 +143,9 @@ sub invalidate_user_sessions {
 =method get_session
 
 Returns the session for the logged in user. Returns undef if there is no session. If an invalid
-session is found in the user's cookies, that session will be deleted from their cookies.
+session is found in the user's cookies, that session will be deleted from their cookies. If the user
+has a session id in their browser that is not valid, the session id will be deleted from their cookie
+and from storage.
 
 =cut
 
@@ -156,7 +158,10 @@ sub get_session {
 
     my $session = $self->session_storage_handler->load_session($session_id);
 
-    $self->_delete_session_cookie unless $session;
+    unless ($session) {
+        $self->session_storage_handler->delete_session($session_id);
+        $self->_delete_session_cookie;
+    }
 
     return $session;
 }

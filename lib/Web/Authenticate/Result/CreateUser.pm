@@ -13,6 +13,7 @@ has success => (
     isa => 'Bool',
     is => 'ro',
     required => 1,
+    default => undef,
 );
 
 =method user
@@ -49,5 +50,23 @@ has failed_password_verifiers => (
     is => 'ro',
     default => sub { [] },
 );
+
+# remove undef arguments before constructed
+around 'BUILDARGS' => sub {
+  my($orig, $self, @params) = @_;
+  my $params;
+
+  if(@params == 1 ) {
+    ($params) = @params;
+  } else {
+    $params = { @params };
+  }
+
+  for my $key (keys %$params){
+    delete $params->{$key} unless defined $params->{$key};
+  }
+
+  $self->$orig($params);
+};
 
 1;

@@ -358,7 +358,6 @@ sub load_session {
             croak "there should be a user agent for session $session_id with digest_hex of " . $self->session_id_digest_hex->($session_id);
         }
         unless ($self->digest->validate($user_agent, $self->user_agent_provider->get_user_agent)) {
-            $self->delete_session($session_id);
             return;
         }
     }
@@ -369,7 +368,6 @@ sub load_session {
             croak "there should be an ip address for session $session_id with digest_hex of " . $self->session_id_digest_hex->($session_id);
         }
         unless ($self->digest->validate($ip_address, $self->ip_address_provider->get_ip_address)) {
-            $self->delete_session($session_id);
             return;
         }
     }

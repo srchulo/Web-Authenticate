@@ -1,11 +1,11 @@
 use strict;
-package Web::Authenticate::Result::IsAuthenticated;
+package Web::Authenticate::Result::CheckForSession;
 use Mouse;
-#ABSTRACT: The result of calling Web::Authenticate::is_authenticated.
+#ABSTRACT: The result of calling Web::Authenticate::check_for_session.
 
 =method success
 
-Returns 1 if the call to login was successful, undef otherwise.
+Returns 1 if the call to L<Web::Authenticate/check_for_session> was successful in finding a valid session, undef otherwise.
 
 =cut
 
@@ -18,7 +18,7 @@ has success => (
 
 =method user
 
-Returns the user that was logged in.
+Returns the user that was logged in. Checking if this is undef is the same as calling L</invalid_username_or_password>.
 
 =cut
 
@@ -27,14 +27,14 @@ has user => (
     is => 'ro',
 );
 
-=method failed_authenticator
+=method auth_redir
 
-Returns the authenticator that caused the authenticate to fail, if there was one.
+Returns the L<Web::Authenticate::Authenticator::Redirect::Role> object that login used to redirect.
 
 =cut
 
-has failed_authenticator => (
-    does => 'Web::Authenticate::Authenticator::Role',
+has auth_redir => (
+    does => 'Web::Authenticate::Authenticator::Redirect::Role',
     is => 'ro',
 );
 
