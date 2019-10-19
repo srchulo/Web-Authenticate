@@ -13,7 +13,7 @@ All L</Web::Authenticate::Digest> objects should be able to digest text and retu
 
 requires 'generate';
 
-=method
+=method validate
 
 Validates the stored hash for the user against the user entered password.
 
