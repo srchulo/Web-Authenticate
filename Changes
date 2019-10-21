@@ -1,6 +1,9 @@
 Revision history for Web::Authenticate
 
 {{$NEXT}}
+    Fixed pod error reported by CPANTS. #4 (@manwar)
+
+0.012     2019-10-04 14:26:25-05:00 America/Chicago
     Auto generate META.json using the plugin [MetaJSON] (@manwar).
 
 0.011     2017-01-15 12:37:58-08:00 America/Los_Angeles
